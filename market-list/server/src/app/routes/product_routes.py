@@ -6,6 +6,7 @@ from src.app.schemas import (
     ListagemProdutosSchema,
     ProdutoBuscaPorNomeSchema,
     ProdutoBuscaSchema,
+    ProdutoUpdateSchema,
     ProdutoDelSchema,
     ProdutoSchema,
     ProdutoViewSchema,
@@ -17,6 +18,7 @@ from src.core.use_cases.add_product import AddProductUseCase
 from src.core.use_cases.delete_product import DeleteProductUseCase
 from src.core.use_cases.get_product import GetProductUseCase
 from src.core.use_cases.list_products import ListProductsUseCase
+from src.core.use_cases.update_product import UpdateProductUseCase
 
 produto_tag = Tag(
     name="Produto",
@@ -30,6 +32,7 @@ def register_product_routes(
     list_use_case: ListProductsUseCase,
     get_use_case: GetProductUseCase,
     delete_use_case: DeleteProductUseCase,
+    update_use_case: UpdateProductUseCase,
 ) -> None:
     @app.post(
         "/produto",
@@ -50,6 +53,7 @@ def register_product_routes(
             return {"mesage": str(error)}, 409
         except Exception:
             return {"mesage": "Não foi possível salvar novo item :/"}, 400
+
 
     @app.get(
         "/produtos",
@@ -86,3 +90,24 @@ def register_product_routes(
             return {"mesage": "Produto removido", "nome": nome}, 200
         except ProductNotFound as error:
             return {"mesage": str(error)}, 404
+
+    @app.put(
+        "/produto",
+        tags=[produto_tag],
+        responses={"200": ProdutoViewSchema, "404": ErrorSchema, "400": ErrorSchema},
+    )
+    def update_produto(query: ProdutoBuscaPorNomeSchema, form: ProdutoUpdateSchema):
+        try:
+            produto = update_use_case.execute(
+                nome_atual=query.nome,
+                novo_nome=form.nome,
+                quantidade=form.quantidade,
+                valor=form.valor,
+            )
+
+            return apresenta_produto(produto), 200
+
+        except ProductNotFound as error:
+            return {"mesage": str(error)}, 404
+        except Exception as e:
+            return {"mesage": f"Erro ao atualizar produto: {e}"}, 400

@@ -102,6 +102,22 @@ header {
     font-weight: bolder;
 }
 
+.editing-cell {
+  background-color: #d8cff2; 
+  border: 1px solid #7b71e1;
+  padding: 2px;
+}
+
+.edit {
+  cursor: pointer;
+  padding: 2px 4px;
+  user-select: none;
+}
+
+.edit:hover {
+  color: #414141;
+}
+
 table,
 th,
 td {

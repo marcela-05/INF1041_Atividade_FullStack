@@ -105,6 +105,78 @@ const deleteItem = (item) => {
     });
 }
 
+const insertEditButton = (parent) => {
+  let span = document.createElement("span");
+  let txt = document.createTextNode("\u{1F589}"); 
+  span.className = "edit";
+  span.appendChild(txt);
+
+  span.isEditing = false;
+
+  span.onclick = function () {
+    let row = this.parentElement.parentElement;
+    let tds = row.getElementsByTagName("td");
+
+    if (!this.isEditing) {
+      this.isEditing = true;
+      this.originalName = tds[0].innerHTML;
+
+      for (let i = 0; i < 3; i++) {
+        tds[i].contentEditable = "true";
+        tds[i].classList.add("editing-cell");
+        tds[i].focus(); 
+      }
+
+      this.textContent = "Salvar";
+    } else {
+      let nomeNovo = tds[0].innerHTML.trim();
+      let novaQtd = tds[1].innerHTML.trim();
+      let novoPreco = tds[2].innerHTML.trim();
+
+      if (nomeNovo === "") {
+        alert("Nome tem que ser preenchido!");
+        return;
+      }
+
+      if (isNaN(novaQtd) || isNaN(novoPreco)) {
+        alert("Quantidade e valor precisam ser apenas números!");
+        return;
+      }
+
+      updateItem(this.originalName, nomeNovo, novaQtd, novoPreco)
+        .then(() => {
+          for (let i = 0; i < 3; i++) {
+            tds[i].contentEditable = "false";
+            tds[i].classList.remove("editing-cell");
+          }
+
+          this.isEditing = false;
+          this.textContent = "\u{1F589}";
+          alert("Atualizado com sucesso!");
+        });
+    }
+  };
+
+  parent.appendChild(span);
+};
+
+const updateItem = (nomeAntigo, nomeNovo, novaQtd, novoPreco) => {
+  const formData = new FormData();
+  formData.append("nome", nomeNovo);
+  formData.append("quantidade", novaQtd);
+  formData.append("valor", novoPreco);
+  const url = "http://127.0.0.1:5000/produto?nome=" + nomeAntigo;
+  return fetch(url, {
+    method: "put",
+    body: formData
+  })
+    .then((response) => response.json())
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
+
+
 /*
   --------------------------------------------------------------------------------------
   Função para adicionar um novo item com nome, quantidade e valor 
@@ -126,6 +198,7 @@ const newItem = () => {
   }
 }
 
+
 /*
   --------------------------------------------------------------------------------------
   Função para inserir items na lista apresentada
@@ -140,6 +213,7 @@ const insertList = (nameProduct, quantity, price) => {
     var cel = row.insertCell(i);
     cel.textContent = item[i];
   }
+  insertEditButton(row.insertCell(-1));
   insertButton(row.insertCell(-1))
   document.getElementById("newInput").value = "";
   document.getElementById("newQuantity").value = "";

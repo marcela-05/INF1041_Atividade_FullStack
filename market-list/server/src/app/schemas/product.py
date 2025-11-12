@@ -12,7 +12,11 @@ class ProdutoSchema(BaseModel):
     quantidade: Optional[int] = None
     valor: float
 
-
+class ProdutoUpdateSchema(BaseModel):
+    nome: Optional[str] = None
+    quantidade: Optional[int] = None
+    valor: Optional[float] = None
+    
 class ProdutoBuscaSchema(BaseModel):
     """Estrutura de busca por produto usando o identificador."""
 
